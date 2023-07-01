@@ -39,5 +39,6 @@ class User:
         print("Could not insert row")
         return
 
+
     def __del__(self):
         self.cursor.close()

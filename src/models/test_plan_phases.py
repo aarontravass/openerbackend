@@ -18,6 +18,34 @@ class TestPlanPhases:
         self.cursor.execute(sql)
         return self.cursor.fetchall()
 
+    def addPhase(self, plan_id, user_id, risk):
+        if TEST_PLAN_STATUS.get(risk) is None:
+            print('Risk should be one of the follow: low, moderate, high')
+            return
+        if not plan_id or not user_id:
+            print("Plan ID and User ID are required")
+            return
+        self.cursor.execute(
+            """
+            select * from public.test_plan
+            where id=%s and user_id=%s and approved_on is not null
+            """,
+            (plan_id, user_id)
+        )
+        rows = self.cursor.fetchall()
+        if(len(rows) ==0):
+            print("No plan found!")
+            return
+        self.cursor.execute(
+            """
+            INSERT INTO public.test_plan_phases VALUES(DEFAULT, %s, NULL, NULL, '%s', DEFAULT, DEFAULT)
+            """,
+            (plan_id, risk)
+        )
+        conn.commit()
+        print("Phase inserted!")
+        return
+
     def approvePhase(self, manager_user_id, phase_id, plan_id, user_id):
         # find plan and determine status
         # if plan status is high, then find indirect managers

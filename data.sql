@@ -25,6 +25,10 @@ CONSTRAINT users_relation_manager_user_id_fkey FOREIGN KEY (manager_user_id)
         ON UPDATE NO ACTION
         ON DELETE NO ACTION
 );
+
+CREATE TYPE risk_statua_enum as ENUM (
+'low', 'moderate', 'high'
+);
 DROP TABLE IF EXISTS PUBLIC.test_plan CASCADE;
 CREATE TABLE IF NOT EXISTS public.test_plan(
   id SERIAL,

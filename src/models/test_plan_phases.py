@@ -200,7 +200,7 @@ class TestPlanPhases:
             concat(first_name, ' ' , last_name) AS name,
             user_id
             FROM test_plan
-            INNER JOIN test_plan_phases ON test_plan.id=test_plan_phases.test_plan_id
+            LEFT JOIN test_plan_phases ON test_plan.id=test_plan_phases.test_plan_id
             LEFT JOIN users ON test_plan_phases.manager_user_id=users.id
 	        """
         )
@@ -221,27 +221,41 @@ class TestPlanPhases:
         for plan in plans:
             if plan_list.get(plan[0]) is None:
                 plan_list[plan[0]] = []
-            plan_list[plan[0]].append(
-                {
-                    "risk": plan[1],
-                    "created_at": plan[2].strftime("%m/%d/%Y, %H:%M:%S"),
-                    "approved_on": plan[3].strftime("%m/%d/%Y, %H:%M:%S") if plan[3] is not None else None,
-                    "approved_by": plan[4] if plan[4] != ' ' else None,
-                    "managers": [ user_dict.get(man) for man in manager_dict[plan[5]]]
-                }
-            )
+            if(plan[1] is None):
+                plan_list[plan[0]]=[
+                    {
+                        "message": "No phases have been added!"
+                    }
+                ]
+            else:
+                plan_list[plan[0]].append(
+                    {
+                        "message":None,
+                        "risk": plan[1],
+                        "created_at": plan[2].strftime("%m/%d/%Y, %H:%M:%S"),
+                        "approved_on": plan[3].strftime("%m/%d/%Y, %H:%M:%S") if plan[3] is not None else None,
+                        "approved_by": plan[4] if plan[4] != ' ' else None,
+                        "managers": [ user_dict.get(man) for man in manager_dict[plan[5]]],
+                        "created_by_user_id": plan[5]
+                    }
+                )
         for key in plan_list.keys():
             print("Plan: ", key)
             print('--------------------------------------')
             for val in plan_list[key]:
-                print("Phase:")
-                print("Risk: ", val['risk'])
-                print("Created At: ", val['created_at'])
-                if val['approved_on']:
-                    print("Approved on: ", val['approved_on'])
-                    print("Approved By: ", val['approved_by'])
+                if val['message'] is None:
+                    print("Phase:")
+                    print("Risk: ", val['risk'])
+                    print("Created At: ", val['created_at'])
+                    if val['approved_on']:
+                        print("Approved on: ", val['approved_on'])
+                        print("Approved By: ", val['approved_by'])
+                    else:
+                        if(val['risk']=='low'):
+                            val['managers'].append(user_dict.get(val['created_by_user_id']))
+                        print("Managers that can approve: ", ', '.join(val['managers']))
                 else:
-                    print("Managers: ", ', '.join(val['managers']))
+                    print(val['message'])
                 print('--------------------------------------')
             print('')
 

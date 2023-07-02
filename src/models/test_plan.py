@@ -1,11 +1,11 @@
-import psycopg2
+
 
 from src.database.database import conn
-class TestPlanPhases:
-    cursor:psycopg2.cursor
+class TestPlan:
+    cursor = None
 
     def __init__(self):
-        self.cursor = conn().cursor()
+        self.cursor = conn.cursor()
         self.cursor.execute("select * from public.test_plan")
         self.records=self.cursor.fetchall()
 
@@ -26,7 +26,7 @@ class TestPlanPhases:
             return
         self.cursor.execute(
             """select * from public.users where id = %s""",
-            (data.get('user_id'))
+            (data.get('user_id'),)
         )
         row = self.cursor.fetchone()
 
@@ -35,7 +35,7 @@ class TestPlanPhases:
             print("No such user exists")
             return
         self.cursor.execute(
-            """INSERT INTO public.test_plan VALUES (DEFAULT, %s, '%s', NULL, DEFAULT, DEFAULT);""",
+            """INSERT INTO public.test_plan VALUES (DEFAULT, %s, %s, NULL, DEFAULT, DEFAULT) RETURNING *;""",
             (data.get('user_id'), data.get('plan_name'))
         )
         row = self.cursor.fetchone()

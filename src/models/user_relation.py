@@ -19,19 +19,18 @@ class UserRelation:
 
     def createOne(self, data):
         if not data.get('user_id') or not data.get('manager_user_id'):
-            print("First Name and Last Name is requried")
+            print("user_id and manager_user_id is requried")
             return
         self.cursor.execute(
             """select * from public.users where id = %s or id = %s""",
             (data.get('user_id'), data.get('manager_user_id'))
         )
         row = self.cursor.fetchall()
-        print(row)
         if (len(row) != 2):
             print("IDs are invalid")
             return
         self.cursor.execute(
-            """INSERT INTO PUBLIC.user_relation VALUES(DEFAULT, %s, %s, DEFAULT, DEFAULT);""",
+            """INSERT INTO PUBLIC.user_relation VALUES(DEFAULT, %s, %s, DEFAULT, DEFAULT) RETURNING *""",
             (data.get('user_id'), data.get('manager_user_id'))
         )
         row = self.cursor.fetchone()
@@ -42,9 +41,8 @@ class UserRelation:
         print("Could not insert row")
         return
 
-    def findShortestPath(self):
-        ceo_id = 5
-        user_id = 2
+    def findShortestPath(self, user_id, manager_id):
+        ceo_id = manager_id
         self.cursor.execute(
             """
             WITH RECURSIVE
@@ -74,6 +72,9 @@ class UserRelation:
             (user_id, ceo_id, ceo_id)
         )
         row = self.cursor.fetchone()
+        if(row is None):
+            print("No shortest path found. Check if  manager_id is manager of user_id")
+            return
         print("Shortest path from %s to %s is %s"%(user_id, ceo_id, row[0]))
         return;
 

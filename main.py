@@ -11,3 +11,7 @@ from src.models.test_plan_phases import TestPlanPhases
 
 phase = TestPlanPhases()
 phase.prettyPrint()
+
+
+#
+# phase.prettyPrint()

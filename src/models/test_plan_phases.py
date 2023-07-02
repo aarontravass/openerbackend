@@ -8,7 +8,6 @@ class TestPlanPhases:
     def __init__(self):
         self.cursor = conn.cursor()
         self.cursor.execute("select * from public.test_plan_phases")
-        self.records = self.cursor.fetchall()
 
     def print(self):
         self.cursor.execute("select * from public.test_plan_phases")
@@ -28,7 +27,7 @@ class TestPlanPhases:
         self.cursor.execute(
             """
             select * from public.test_plan
-            where id=%s and user_id=%s and approved_on is not null
+            where id=%s and user_id=%s and approved_on is null
             """,
             (plan_id, user_id)
         )
@@ -38,7 +37,7 @@ class TestPlanPhases:
             return
         self.cursor.execute(
             """
-            INSERT INTO public.test_plan_phases VALUES(DEFAULT, %s, NULL, NULL, '%s', DEFAULT, DEFAULT)
+            INSERT INTO public.test_plan_phases VALUES(DEFAULT, %s, NULL, NULL, %s, DEFAULT, DEFAULT)
             """,
             (plan_id, risk)
         )
@@ -62,7 +61,7 @@ class TestPlanPhases:
             """select risk, user_id, public.test_plan_phases.approved_on 
             from public.test_plan inner join public.test_plan_phases
             on public.test_plan.id=public.test_plan_phases.test_plan_id
-            where user_id=%s and test_plan.id=%s 
+            where user_id=%s and test_plan.id=%s and
             test_plan_phases.id=%s
             """,
             (user_id, plan_id, phase_id)
@@ -82,7 +81,7 @@ class TestPlanPhases:
                 self.cursor.execute(
                     """
                     update test_plan_phases 
-                    set approved_on=CURRENT_TIMESTAMP
+                    set approved_on=CURRENT_TIMESTAMP,
                     manager_user_id=%s,
                     updated_at=CURRENT_TIMESTAMP
                     where id=%s
@@ -100,7 +99,7 @@ class TestPlanPhases:
                 self.cursor.execute(
                     """
                     update test_plan_phases 
-                    set approved_on=CURRENT_TIMESTAMP
+                    set approved_on=CURRENT_TIMESTAMP,
                     manager_user_id=%s,
                     updated_at=CURRENT_TIMESTAMP
                     where id=%s
@@ -118,7 +117,7 @@ class TestPlanPhases:
                 self.cursor.execute(
                     """
                     update test_plan_phases 
-                    set approved_on=CURRENT_TIMESTAMP
+                    set approved_on=CURRENT_TIMESTAMP,
                     manager_user_id=%s,
                     updated_at=CURRENT_TIMESTAMP
                     where id=%s
@@ -150,14 +149,14 @@ class TestPlanPhases:
             )
             SELECT *
             FROM cte AS C
-            WHERE c.manager_user_id
             GROUP BY c.manager_user_id
             """,
-            (user_id)
+            (user_id,)
         )
-
+        rows = self.cursor.fetchall()
         manager_list = []
-        for r in self.cursor.fetchall():
+        for r in rows:
+            print(r)
             manager_list.append(r[0])
         return manager_list
 
@@ -182,7 +181,7 @@ class TestPlanPhases:
             """
            SELECT manager_user_id FROM user_relation WHERE user_id=%s
             """,
-            (user_id)
+            (user_id,)
         )
 
         direct_manager_list = []
